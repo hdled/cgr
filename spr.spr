@@ -1,0 +1,122 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local localPlayer = Players.LocalPlayer
+
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local neck
+
+if humanoid.RigType == Enum.HumanoidRigType.R6 then
+    neck = character:WaitForChild("Torso"):WaitForChild("Neck")
+else
+    neck = character:WaitForChild("UpperTorso"):WaitForChild("Neck")
+end
+
+local originalC0 = neck.C0
+local angle = 0
+local activado = false
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GiroCabezaGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 160, 0, 70)
+mainFrame.Position = UDim2.new(0.5, -80, 0.1, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = mainFrame
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 140, 0, 35)
+button.Position = UDim2.new(0, 10, 0, 25)
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+button.Text = "Girar: OFF"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize = 16
+button.Font = Enum.Font.SourceSansBold
+button.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = button
+
+local minButton = Instance.new("TextButton")
+minButton.Size = UDim2.new(0, 20, 0, 20)
+minButton.Position = UDim2.new(1, -50, 0, 3)
+minButton.BackgroundTransparency = 1
+minButton.Text = "-"
+minButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minButton.TextSize = 18
+minButton.Font = Enum.Font.SourceSansBold
+minButton.Parent = mainFrame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -25, 0, 3)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 85, 85)
+closeButton.TextSize = 16
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = mainFrame
+
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 40, 0, 40)
+openButton.Position = UDim2.new(0, 10, 0.5, -20)
+openButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+openButton.Text = "↻"
+openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openButton.TextSize = 24
+openButton.Font = Enum.Font.SourceSansBold
+openButton.Visible = false
+openButton.Active = true
+openButton.Draggable = true
+openButton.Parent = screenGui
+
+local openCorner = Instance.new("UICorner")
+openCorner.CornerRadius = UDim.new(0, 20)
+openCorner.Parent = openButton
+
+button.MouseButton1Click:Connect(function()
+    activado = not activado
+    if activado then
+        button.Text = "Girar: ON"
+        button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        button.Text = "Girar: OFF"
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        neck.C0 = originalC0
+    end
+end)
+
+minButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    openButton.Visible = true
+end)
+
+openButton.MouseButton1Click:Connect(function()
+    openButton.Visible = false
+    mainFrame.Visible = true
+end)
+
+local connection
+closeButton.MouseButton1Click:Connect(function()
+    activado = false
+    neck.C0 = originalC0
+    if connection then connection:Disconnect() end
+    screenGui:Destroy()
+end)
+
+connection = RunService.RenderStepped:Connect(function()
+    if activado then
+        angle = angle + 0.1
+        neck.C0 = originalC0 * CFrame.Angles(0, angle, 0)
+    end
+end)
